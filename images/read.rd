@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Happy Birthday</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+           
+        }
+
+        #board {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: rgb(245, 247, 250);
+            /* background-color:aliceblue; */
+            /* background: url(./images/crack.gif) center no-repeat ; */
+
+            /* border-radius: 5rem; */
+            /* margin-top: 20px; */
+        }
+
+        .card {
+            width: 90%;
+            height: 80%;
+            border-radius: 5rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            transform: translateX(-50%) translateY(-50%) scale(0.95);
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5rem;
+        }
+
+        #message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #333;
+        }
+        h1{
+            text-align: center;
+            font-size: 90px;
+            
+
+
+        }
+        #message{
+            text-align: center;
+            position: ;
+        }
+        video{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5rem ;
+        }
+    </style>
+</head>
+
+<body >
+    <div id="board">
+       
+        <h1>HAPPY BIRTHDAY</h1><br>
+        <div class="card">
+            <img src="./images/11.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/12.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/13.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/14.jpg" alt="">
+        </div>
+        <div class="card">
+            <video src="./images/video.mp4" autoplay muted loop ></video>
+        </div>
+        <div class="card">
+            <img src="./images/16.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/17.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/18.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/19.jpg" alt="">
+        </div>
+        <div class="card">
+            <img src="./images/20.jpg" alt="">
+        </div>
+    </div>
+
+    <div id="message">
+        Happy Birthday!!!
+    </div>
+    
+    
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script>
+
+        
+        class Carousel {
+            constructor(element) {
+                this.board = element;
+                this.currentCards = this.board.querySelectorAll('.card').length;
+                this.maxCards = 10;
+                this.handle();
+            }
+
+            handle() {
+                this.cards = this.board.querySelectorAll('.card');
+                if (this.cards.length === 0) {
+                    document.getElementById('message').style.display = 'block';
+                    return;
+                }
+
+                this.topCard = this.cards[this.cards.length - 1];
+                this.nextCard = this.cards[this.cards.length - 2];
+
+                if (this.cards.length > 0) {
+                    this.topCard.style.transform =
+                        'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(0deg) scale(1)';
+
+                    if (this.hammer) this.hammer.destroy();
+
+                    this.hammer = new Hammer(this.topCard);
+                    this.hammer.add(new Hammer.Tap());
+                    this.hammer.add(new Hammer.Pan({
+                        position: Hammer.position_ALL,
+                        threshold: 0
+                    }));
+
+                    this.hammer.on('tap', (e) => {
+                        this.onTap(e);
+                    });
+                    this.hammer.on('pan', (e) => {
+                        this.onPan(e);
+                    });
+                }
+            }
+
+            onTap(e) {
+                let propX = (e.center.x - e.target.getBoundingClientRect().left) / e.target.clientWidth;
+                let rotateY = 15 * (propX < 0.05 ? -1 : 1);
+
+                this.topCard.style.transition = 'transform 100ms ease-out';
+                this.topCard.style.transform =
+                    'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(' + rotateY + 'deg) scale(1)';
+
+                setTimeout(() => {
+                    this.topCard.style.transform =
+                        'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(0deg) scale(1)';
+                }, 100);
+            }
+
+            onPan(e) {
+                if (!this.isPanning) {
+                    this.isPanning = true;
+                    this.topCard.style.transition = null;
+                    if (this.nextCard) this.nextCard.style.transition = null;
+
+                    let style = window.getComputedStyle(this.topCard);
+                    let mx = style.transform.match(/^matrix\((.+)\)$/);
+                    this.startPosX = mx ? parseFloat(mx[1].split(', ')[4]) : 0;
+                    this.startPosY = mx ? parseFloat(mx[1].split(', ')[5]) : 0;
+
+                    let bounds = this.topCard.getBoundingClientRect();
+                    this.isDraggingFrom =
+                        (e.center.y - bounds.top) > this.topCard.clientHeight / 2 ? -1 : 1;
+                }
+
+                let posX = e.deltaX + this.startPosX;
+                let posY = e.deltaY + this.startPosY;
+
+                let propX = e.deltaX / this.board.clientWidth;
+                let propY = e.deltaY / this.board.clientHeight;
+
+                let dirX = e.deltaX < 0 ? -1 : 1;
+                let deg = this.isDraggingFrom * dirX * Math.abs(propX) * 45;
+                let scale = (95 + (5 * Math.abs(propX))) / 100;
+
+                this.topCard.style.transform =
+                    'translateX(' + posX + 'px) translateY(' + posY + 'px) rotate(' + deg + 'deg) rotateY(0deg) scale(1)';
+                if (this.nextCard) this.nextCard.style.transform =
+                    'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(0deg) scale(' + scale + ')';
+
+                if (e.isFinal) {
+                    this.isPanning = false;
+                    let successful = false;
+
+                    this.topCard.style.transition = 'transform 200ms ease-out';
+                    if (this.nextCard) this.nextCard.style.transition = 'transform 100ms linear';
+
+                    if (propX > 0.25 && e.direction == Hammer.DIRECTION_RIGHT) {
+                        successful = true;
+                        posX = this.board.clientWidth;
+                    } else if (propX < -0.25 && e.direction == Hammer.DIRECTION_LEFT) {
+                        successful = true;
+                        posX = -(this.board.clientWidth + this.topCard.clientWidth);
+                    } else if (propY < -0.25 && e.direction == Hammer.DIRECTION_UP) {
+                        successful = true;
+                        posY = -(this.board.clientHeight + this.topCard.clientHeight);
+                    }
+
+                    if (successful) {
+                        this.topCard.style.transform =
+                            'translateX(' + posX + 'px) translateY(' + posY + 'px) rotate(' + deg + 'deg)';
+
+                        setTimeout(() => {
+                            this.board.removeChild(this.topCard);
+                            this.currentCards--;
+                            this.handle();
+                        }, 200);
+                    } else {
+                        this.topCard.style.transform =
+                            'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(0deg) scale(1)';
+                        if (this.nextCard) this.nextCard.style.transform =
+                            'translateX(-50%) translateY(-50%) rotate(0deg) rotateY(0deg) scale(0.95)';
+                    }
+                }
+            }
+        }
+
+        let board = document.querySelector('#board');
+        let carousel = new Carousel(board);
+       
+    </script>
+    <script src="main.js"></script>
+
+</body>
+
+</html>
